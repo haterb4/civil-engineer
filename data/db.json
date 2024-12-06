@@ -1,0 +1,182 @@
+{
+  "users": [
+    {
+      "id": 1727084767568,
+      "name": "Mairie de Batié",
+      "email": "haterb2803@gmail.com",
+      "password": "misericorde",
+      "role": "Maitre d'ouvrage"
+    },
+    {
+      "id": 1727084826743,
+      "name": "MOE",
+      "email": "yvannzeuguem@gmail.com",
+      "password": "12356789",
+      "role": "Maitrise d'oeuvre"
+    },
+    {
+      "id": 1727084894782,
+      "name": "CST Mairie de Batié ",
+      "email": "test@email.com",
+      "password": "EUTaa@7U5PH",
+      "role": "Chef service du marché"
+    },
+    {
+      "id": 1727084955231,
+      "name": "Délégué départemental des hauts plateaux du MINTP",
+      "email": "test2@email.com",
+      "password": "EUTaa@7U5PH",
+      "role": "Ingénieur du marché"
+    },
+    {
+      "id": 1727085508443,
+      "name": "Entreprise",
+      "email": "test3@email.com",
+      "password": "EUTaa@7U5PH",
+      "role": "Entreprise"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1727083864170,
+      "name": "Construction d'une salle de fête ",
+      "description": "Construction d'une salle de fête dans la commune de Batié",
+      "createdBy": 1,
+      "users": [
+        {
+          "user": {
+            "id": 1727084767568,
+            "name": "Mairie de Batié",
+            "email": "haterb2803@gmail.com",
+            "password": "misericorde",
+            "role": "Maitre d'ouvrage"
+          },
+          "role": "Maitre d'ouvrage"
+        },
+        {
+          "user": {
+            "id": 1727084826743,
+            "name": "MOE",
+            "email": "yvannzeuguem@gmail.com",
+            "password": "12356789",
+            "role": "Maitrise d'oeuvre"
+          },
+          "role": "Maitrise d'oeuvre"
+        },
+        {
+          "user": {
+            "id": 1727084894782,
+            "name": "CST Mairie de Batié ",
+            "email": "test@email.com",
+            "password": "EUTaa@7U5PH",
+            "role": "Chef service du marché"
+          },
+          "role": "Chef service du marché"
+        },
+        {
+          "user": {
+            "id": 1727084955231,
+            "name": "Délégué départemental des hauts plateaux du MINTP",
+            "email": "test2@email.com",
+            "password": "EUTaa@7U5PH",
+            "role": "Ingénieur du marché"
+          },
+          "role": "Ingénieur du marché"
+        },
+        {
+          "user": {
+            "id": 1727085508443,
+            "name": "Entreprise",
+            "email": "test3@email.com",
+            "password": "EUTaa@7U5PH",
+            "role": "Entreprise"
+          },
+          "role": "Entreprise"
+        }
+      ],
+      "status": "Ongoing",
+      "documents": [
+        {
+          "id": 1727083905774,
+          "name": "Decompte n2",
+          "signatures": [
+            {
+              "userId": 1,
+              "date": "2024-10-07T13:33:18.353Z"
+            },
+            {
+              "userId": 1,
+              "date": "2024-10-07T13:34:05.105Z"
+            },
+            {
+              "userId": 1,
+              "date": "2024-10-07T13:36:02.857Z"
+            }
+          ],
+          "createdAt": "2024-09-23T09:31:45.774Z",
+          "versions": [
+            {
+              "versionName": "v1.0",
+              "file": "uploads/1d6cd180-637e-4bfc-b89d-8fac4849048a_signed_document.pdf",
+              "createdAt": "2024-09-23T09:31:45.774Z",
+              "comments": [
+                {
+                  "id": 1727084071687,
+                  "text": "Ce document doit être approuvé par les intervenants dans les délais spécifiés dans le marché (7 pour l'ingénieur du marché, le chef service du marché et le maitre d'œuvre et dans un délais de moins de 51 jours a compté de ce jour pour le maitre d'ouvrage",
+                  "author": "Entreprise"
+                },
+                {
+                  "id": 1727085888863,
+                  "text": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                  "author": "Maitrise d'oeuvre"
+                },
+                {
+                  "id": 1727085896481,
+                  "text": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                  "author": "Ingénieur du marché"
+                },
+                {
+                  "id": 1727085902639,
+                  "text": "RAS",
+                  "author": "Chef service du marché"
+                },
+                {
+                  "id": 1727085908218,
+                  "text": "RAS",
+                  "author": "Maitre d'ouvrage"
+                }
+              ]
+            },
+            {
+              "versionName": "Decompte N°2 corrigé ",
+              "file": "uploads/Mémoire_développement_d_un_protocole_réseau_écoénergétique_basé_sur_quic_pour_le_transfert_parallèle_et_distribué_de_données_entre_sites_(1).pdf",
+              "createdAt": "2024-09-23T10:13:12.218Z",
+              "comments": [
+                {
+                  "id": 1727086452419,
+                  "text": "ok",
+                  "author": "Maitrise d'oeuvre"
+                },
+                {
+                  "id": 1727086459751,
+                  "text": "ok",
+                  "author": "Ingénieur du marché"
+                },
+                {
+                  "id": 1727086465351,
+                  "text": "ok",
+                  "author": "Chef service du marché"
+                },
+                {
+                  "id": 1727086471722,
+                  "text": "ok",
+                  "author": "Maitre d'ouvrage"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,366 @@
+\initial{D}\textit{ans ce premier chapitre, nous présentons les concepts de base nécessaires à la compréhension du protocole proposé. Nous aborderons les fondamentaux des \textbf{protocoles de communication}, en particulier les caractéristiques du \textbf{protocole QUIC} et son importance dans l’amélioration des performances des transferts de données. Les notions de \textbf{débit}, de \textbf{latence} et de \textbf{multipath} seront également détaillées. Nous réaliserons une analyse des principaux \textbf{protocoles de transfert de données} actuellement utilisés, en mettant l’accent sur leurs forces et limitations, et nous conclurons par une \textbf{étude comparative}.}
+\mtcselectlanguage{french}
+%\minitoc
+
+\newpage    
+%%%%%%%%%%%%%%%%%%%%%%%%%SECTION VIRTUALISATION%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Rappels sur les protocoles transport de données}
+Les \textbf{protocoles} réseau sont les ensembles de \textbf{règles} et de \textbf{conventions} qui permettent la communication entre différents dispositifs au sein d'un réseau. Ils définissent la manière dont les données sont envoyées, reçues, et interprétées sur le réseau. Les protocoles réseau se classifient en différentes couches selon le modèle OSI (Open Systems Interconnection) ou le modèle TCP/IP, qui sont des frameworks utilisés pour comprendre et concevoir des systèmes de communication en réseau.\\
+
+Les protocoles de transport sont responsables de la livraison fiable et ordonnée des données entre les applications qui communiquent sur un réseau. Ils assurent la gestion des flux de données, le contrôle des erreurs, et la gestion de la congestion. Les deux principaux protocoles de transport sont
+
+\subsection{Le protocole TCP}
+Le protocole TCP est un protocole de la couche Transport qui assure une transmission de données fiable et ordonnée entre deux dispositifs. En 2020, TCP represente environs 95\%\cite{ipierre-giraud-2020} de tout le traffic internet. il fonctionne selon un processus de « poignée de main à trois voies », permet d’établir une connexion entre un appareil et un serveur. Ce processus de « poignée de main à trois voies » est illustré comme suit\cite{gorman-2023}:
+
+\begin{enumerate}
+    \item Le client qui initie le transfert de données envoie un numéro de séquence (SYN) au serveur. Il indique au serveur le numéro par lequel le transfert de paquets de données doit commencer.
+    \item Le serveur accuse réception du SYN du client et envoie son propre numéro SYN. Cette étape est souvent appelée SYN-ACK.
+    \item Le client accuse ensuite réception du SYN-ACK du serveur, ce qui permet d’établir une connexion directe et de commencer le transfert de données.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.35]{chapters/chapter02/fig/tcp/TCP-handshake.png}
+    \caption{Processus de handshake TCP\cite{gorman-2023}}
+    \label{fig:gen}
+\end{figure}
+
+La connexion entre les deux parties est maintenue jusqu’à ce que le transfert de données soit terminé, et chaque paquet envoyé nécessite un accusé de réception du destinataire. Si une erreur se produit, le paquet défectueux est rejeté et l’expéditeur en envoie un nouveau. D'autres problèmes peuvent retarder l’envoie de données mais sans interrompre la connexion, c'est grâce à tous ces contrôles que TCP garantie la livraison des données.\\
+
+\textbf{Les principales caractéristiques de TCP incluent :}
+\begin{itemize}
+    \item \textbf{La fiabilité :} TCP garantit la livraison des paquets de données dans l'ordre où ils ont été envoyés, et sans duplication. Il utilise des accusés de réception et des numéros de séquence pour suivre les paquets.
+    \item \textbf{Le contrôle de flux :} TCP gère la quantité de données que le récepteur peut traiter, empêchant ainsi la saturation des tampons du récepteur.
+    \textbf{Contrôle de congestion :} TCP adapte la vitesse de transmission des données en fonction de la congestion du réseau pour éviter les engorgements. 
+    \item \textbf{Connexion :} TCP établit une connexion entre l'émetteur et le récepteur avant de commencer la transmission de données, ce qui implique une phase d'établissement et de terminaison de la connexion (handshake à trois étapes).
+\end{itemize}
+
+\textbf{Les principaux inconvenients de TCP sont :}
+\begin{itemize}
+    \item Il est particulièrement lent au début d’un transfert de fichier.
+    \item Il peut empêcher le chargement des données si certaines d’entre elles sont perdues. 
+    \item Il réduit son taux de transfert si le réseau est encombré, ce qui se traduit par des vitesses encore plus lentes.
+    \item Il n’est pas adapté aux réseaux LAN et PAN.
+    \item Il ne peut pas effectuer de multidiffusion ni de radiodiffusion.
+\end{itemize}
+
+Les avantages et inconvenients du protocole TCP le rendent addapté aux usages tels que les E-mails et SMS, Transfert de fichiers entre applications et appareils, etc.
+
+\subsection{Le protocole UDP}
+Le protocole UDP est un protocole de la couche Transport qui permet une transmission de données rapide mais non fiable. Contrairement à TCP, UDP ne fournit pas de mécanismes de correction d'erreurs ou de garantie de livraison. Il fonctionne en envoyant immédiatement des données au récepteur qui a fait une demande de transmission, jusqu’à ce que celle ci soit terminée ou interrompue. Parfois appelé protocole « tire et oublie », UDP envoie des données à un destinataire sans ordre spécifique, sans confirmer la livraison ni vérifier si les paquets sont arrivés comme prévu\cite{gorman-2023}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.35]{chapters/chapter02/fig/udp/UDP-startup.png}
+    \caption{Le protocole UDP fonctionne en envoyant rapidement des données de l’expéditeur au destinataire, jusqu’à ce que le transfert soit terminé ou interrompu.\cite{gorman-2023}}
+    \label{fig:gen}
+\end{figure}
+
+\textbf{Les principales caractéristiques de UDP incluent :} 
+\begin{itemize}
+    \item \textbf{La simplicité et la rapidité :} UDP est plus simple et plus rapide que TCP car il ne nécessite pas d'établissement de connexion et n'implémente pas de mécanismes de contrôle de flux ou de congestion. 
+    \item \textbf{La transmission non fiable :} UDP ne garantit pas la livraison des paquets ni leur ordre de réception. Il n'utilise pas d'accusés de réception ni de numéros de séquence. Il supporte la perte de paquets et fournit des données même si elles sont incomplètes. 
+    \item \textbf{Applications spécifiques :} UDP est souvent utilisé pour les applications où la rapidité prime sur la fiabilité, comme les diffusions en direct, les jeux en ligne, et les services de voix sur IP (VoIP) ou il est préférable de perdre quelques paquets au lieu de tout retransmettre. 
+\end{itemize}
+
+\textbf{Les inconvenients du protocle UPD sont les suivant:}
+\begin{itemize}
+    \item Il n’y a aucun moyen de savoir si les données sont livrées dans leur état d’origine, ou même si elles sont livrées.
+    \item Il n’a pas de contrôle des erreurs : il laisse donc tomber les paquets lorsque des erreurs sont détectées.
+    \item En cas de collision de données, les routeurs abandonnent souvent les paquets UDP et favorisent les paquets TCP.
+    \item Il ne peut pas séquencer les données, qui peuvent donc arriver dans n’importe quel ordre ou dans le désordre.
+    \item Le fait que plusieurs utilisateurs acceptent des données UDP peut provoquer une congestion, et il n’y a aucun moyen d’y remédier.
+\end{itemize}
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{|p{3cm} | p{6cm} | p{6cm} |}
+        \hline
+        \textbf{Facteur} & \textbf{TCP} & \textbf{UDP} \\ \hline
+        Type de connexion & Requiert une connexion établie avant de transmettre des données & Aucune connexion n’est nécessaire pour démarrer et terminer un transfert de données \\ \hline
+        Séquence de données & Peut séquencer les données (les envoyer dans un ordre spécifique) & Impossible de séquencer ni d’organiser les données \\ \hline
+        Retransmission des données & Peut retransmettre les données si les paquets n’arrivent pas & Pas de retransmission de données. Les données perdues ne peuvent pas être récupéréess \\ \hline
+        Livraison & La livraison est garantie & La livraison n’est pas garantie \\ \hline
+        Recherche des erreurs & Un contrôle approfondi des erreurs garantit que les données arrivent dans l’état prévu & Le contrôle minimal des erreurs couvre l’essentiel, mais ne permet pas forcément d’éviter toutes les erreurs \\ \hline
+        Radiodiffusion & Non pris en charge & Pris en charge \\ \hline
+        Rapidité & Transmission lente mais complète des données & Rapide, mais risque de transmission de données incomplètes \\ \hline
+    \end{tabular}\\
+    \caption{Tableau récapitulatif des différences entre TCP et UDP }
+    \label{tab:TCP_VS_UDP}
+\end{table}
+
+\newpage
+
+\section{Présentation du protocole de transport QUIC}
+\subsection{introduction}
+QUIC est un protocole de transport initié par Google en 2012, avec une première version officielle introduite par l'Internet Engineering Task Force (IETF) en 2021. Il a été développé pour résoudre plusieurs problèmes associés au protocole TCP. Premièrement, dans TCP, la perte d'un paquet empêche tous les paquets suivants d'atteindre l'application en raison de la livraison séquentielle et de la gestion des flux basée sur les fenêtres. Deuxièmement, TCP utilise l'adresse IP et le numéro de port pour identifier une connexion, ce qui nécessite une négociation coûteuse en cas de changement d'adresse IP ou de numéro de port, car il ne permet pas la réutilisation du contexte de communication. Troisièmement, TCP ne prend pas en charge nativement le multiplexage. Plutôt que d'améliorer TCP, il a été décidé de développer un nouveau protocole. En effet, TCP est implémenté dans le noyau, alors que QUIC est implémenté sur UDP, ce qui le rend plus flexible. De plus, QUIC intègre des fonctionnalités telles que le multiplexage, la cryptographie, le contrôle de congestion et la récupération des pertes, contrairement à TCP où ces fonctionnalités sont fixes \cite{alawaji2021ietf, langley2017quic}. \\
+\subsection{Architecture fonctionnelle du protocole}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=1]{chapters/chapter02/fig/quic/QUIC_architecture.png}
+    \caption{QUIC architecture.\cite{alawaji2021ietf}}
+    \label{fig:gen}
+\end{figure}
+
+QUIC fonctionne en remplaçant la majorité de la pile HTTPS traditionnelle, combinant les fonctionnalités de HTTP/2, TLS et TCP. Il utilise UDP comme substrat, permettant à ses paquets de traverser les middleboxes (dispositifs intermédiaires) tout en maintenant une sécurité et une intégrité des données élevées grâce à un chiffrement et une authentification intégrée. Cette utilisation d'UDP permet également une plus grande flexibilité et rapidité dans la mise à jour et le déploiement du protocole. Pour mieux comprendre le fonctionnement de QUIC, examinons en détail ses principales composantes et la manière dont elles améliorent les performances et la sécurité des communications réseau.
+
+\subsection{Les principaux concepts autour du protocole QUIC}
+\subsubsection{Établissement de connexion }
+QUIC s'appuie sur une poignée de main (handshake) cryptographique et de transport combinée pour établir une connexion de transport sécurisée. Il utilise une approche de connexion 0-RTT et 1-RTT, permettant d'établir une connexion sécurisée avec une latence minimale \cite{alawaji2021ietf, langley2017quic}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.2]{chapters/chapter02/fig/quic/QUIC_handshake.png}
+    \caption{QUIC Connection establishment 0-RTT and 1-RTT handshake.\cite{alawaji2021ietf}}
+    \label{fig:gen}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{0-RTT :} Permet aux clients qui ont précédemment connecté de reprendre une session et d'envoyer des données dès le premier paquet. Cela réduit considérablement le temps nécessaire pour établir une connexion.
+    \item \textbf{1-RTT :} Utilisé pour les nouvelles connexions, où une poignée de main initiale est effectuée pour échanger les clés de chiffrement et établir une connexion sécurisée en un seul aller-retour.
+\end{itemize}
+
+La sécurité de l'établissement de connexion est assurée par l'utilisation de TLS, qui garantit que toutes les communications sont chiffrées dès le début de la connexion. QUIC inclut également une négociation de version pour éviter des retards et garantir que le client et le serveur utilisent la même version du protocole. Cela améliore l'efficacité et la sécurité de l'établissement de la connexion.
+
+\subsubsection{Authentification et Chiffrement}
+À l'exception de quelques paquets de poignée de main initiaux et de paquets de réinitialisation, les paquets QUIC sont entièrement authentifiés et principalement chiffrés \cite{langley2017quic}.
+Les parties de l'entête d'un paquet qui ne sont pas chiffrés sont soit utile au routage, soit aident au déchiffrement du paquet. Ces parties incluent les Flags, le Connection ID, le Version Number, le Diversification Nonce et le Packet Number comme l'indique la figure \textbf{1.5}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.5]{chapters/chapter02/fig/quic/Quic-packet-arch.png}
+    \caption{Structure d'un paquet QUIC.\cite{quicpaquet}}
+    \label{fig:gen}
+\end{figure}
+
+Les indicateurs de paquets codent la présence du champ ID de connexion et la longueur du champ numéro de paquet, indispensables pour lire les champs suivants. L'ID de connexion, utilisé pour le routage et l'identification, aide les équilibreurs de charge à diriger le trafic vers le bon serveur. Les champs du numéro de version et du nonce de diversification apparaissent uniquement dans les paquets initiaux, où le nonce est généré par le serveur pour ajouter de l'entropie. Les numéros de paquets servent de nonce pour authentifier et déchiffrer les paquets, étant placés hors du chiffrement pour permettre le déchiffrement des paquets reçus hors ordre. Toute manipulation des paquets de poignée de main non chiffrés entraîne l'échec de la connexion en raison de la divergence des clés finales. Les paquets de réinitialisation, envoyés par un serveur sans état de connexion, sont non chiffrés et non authentifiés. Ce mécanisme assure que les informations initiales non chiffrées participent à la sécurité globale en garantissant l'échec de la connexion en cas de tentative de manipulation.
+
+\subsubsection{Multiplexage de Flux}
+Le multiplexage de flux permet à plusieurs flux de données indépendants d'être envoyés simultanément sur une seule connexion QUIC. Chaque flux est identifié de manière unique, ce qui permet une transmission parallèle des données sans interférence entre les différents flux. Cette fonctionnalité élimine le blocage tête de ligne (head-of-line blocking). Contrairement à TCP, où la perte d'un paquet peut bloquer la livraison de tous les paquets suivants, dans QUIC, cette perte de paquets dans un flux n'affecte pas les autres flux ce qui améliore grandement l'efficacité et la rapidité des transmissions \cite{langley2017quic}.  
+
+\subsubsection{Récupération de Pertes}
+La récupération de pertes dans QUIC est basée sur des algorithmes modernes de détection et de correction des pertes de paquets, conçus pour minimiser l'impact sur la performance de la connexion. Quic numérote tous les paquets y compris ceux des retransmissions et chaque paquet porte sans distinction un nouveau numéro. Ceci permet d'eviter la nécéssité d'un mécanisme distinct les aquittements des retransmission de ceux des transmissions originales commme c'est le cas dans TCP, il utilise également des décalage de flux dans les trames de flux pour assurer l'ordre de livraison permettant ainsi de séparer ces deux fonctions confondues dans TCP \cite{langley2017quic, alawaji2021ietf}.
+
+\subsubsection{Contôle de flux}
+QUIC améliore ce blocage potentiel en tête de ligne entre les flux en limitant le tampon qu'un flux peut consommer. Il utilise a cet effet un contrôle de flux au niveau de la connexion, qui limite le tampon global qu'un expéditeur peut consommer au niveau du récepteur pour tous les flux, et un contrôle de flux au niveau du flux, qui limite le tampon qu'un expéditeur peut consommer sur un flux donné. Un récepteur annonce le décalage absolu d'octets dans chaque flux jusqu'auquel il est prêt à recevoir des données. Au fur et à mesure que les données sont envoyées, reçues et livrées sur un flux particulier, le récepteur envoie périodiquement des trames de mise à jour de fenêtre qui augmentent la limite de décalage annoncée pour ce flux, ce qui permet à l'homologue d'envoyer davantage de données sur ce flux. Le contrôle de flux au niveau de la connexion fonctionne de la même manière que le contrôle de flux au niveau du flux, mais le nombre d'octets livrés et le décalage le plus élevé reçu sont regroupés dans tous les flux \cite{langley2017quic} la figure \textbf{1.8} illustre ce processus de controle de flux.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.15]{chapters/chapter02/fig/quic/Flow_control.png}
+    \caption{QUIC stream flow control.\cite{alawaji2021ietf}}
+    \label{fig:gen}
+\end{figure}
+
+\subsubsection{Contrôle de Congestion}
+Le contrôle de congestion dans QUIC est conçu pour s'adapter aux conditions changeantes du réseau, évitant la congestion tout en maximisant le débit. QUIC propose un environnement de gestion de la congestion différent de TCP, intégrant des algorithmes modernes de récupération des pertes tels que Retransmission Timeout (RTO), Tail Loss Probe, Forward RTO-Recovery (F-RTO) et Early Retransmit dès le départ. Il fournit un retour plus détaillé pour la détection des pertes grâce à l'utilisation d'un numéro de paquet croissant de manière monotone, ce qui permet d'identifier les retransmissions sans ambiguïté. En enregistrant la différence de temps entre la réception et l'émission d'un paquet, il permet a  à l'expéditeur d'estimer plus précisément le temps de transit aller-retour (RTT). Il utilise également le mécanisme de reconnaissance sélective des aquittement (ACKs) et peut gérer jusqu'à 255 plages d'ACK \cite{alawaji2021ietf}, augmentant ainsi sa résistance aux réorganisations et aux pertes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.2]{chapters/chapter02/fig/quic/Congetion_control_state.png}
+    \caption{Congestion Control States and Transitions.\cite{alawaji2021ietf}}
+    \label{fig:gen}
+\end{figure}
+
+Dans la mise en œuvre de l'IETF QUIC, l'algorithme NewReno est utilisé pour le contrôle de la congestion. Il est similaire à TCP NewReno et commençe chaque connexion en mode Slow Start. Ensuite, la fenêtre de congestion augmente en fonction des octets reconnus, et en cas de perte de paquet ou d'augmentation de l'Explicit Congestion Notification (ECN-CE), l'expéditeur entre en état de Recovery Period, où le seuil de démarrage lent diminue de moitié à chaque RTT. Une fois tous les accusés de réception reçus, l'expéditeur passe en état de Congestion Avoidance. En production, QUIC utilise souvent Cubic comme contrôleur de congestion et peut gérer le changement d'adresse IP et de port grâce à l'ID de connexion, permettant ainsi une migration de connexion sans interruption.
+
+\subsection{Etude comparative des protocoles de transport QUIC, TCP et UDP}
+
+Afin de mettre en perspective les avantages et les inconvénients de QUIC par rapport à TCP et UDP, il est essentiel de comparer ces protocoles sur la base de critères pertinents qui justifient notre choix d'utiliser ce protocole dans notre travail plutot que les autres. Dans les section précédentes, nous avons axé notre redaction de maniere a ressortir pour chacun de ces protocoles les aspects utiles a cette section. Pour notre travail qui pour sa globalité portera sur un transfert sécurisé de données ordonnées et nécessitant a la fois une garantie de réception et une grande vitesse d'execution, nous avons choisi les critères apparents de, la \textbf{latence}, la \textbf{sécurité}, \textbf{fiabilité}, \textbf{multiplexage de flux}, \textbf{contrôle de flux et de congestion}, \textbf{la récupération de pertes}, et la \textbf{résilience}. le tableau \textbf{1 . 4} présente cette comparaison etres les protocomes QUIC, TCP et UDP.
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{| p{3cm} | p{5cm} | p{4cm} | p{3cm} |}
+        \hline
+        \textbf{Critere} & \textbf{QUIC} & \textbf{TCP} & \textbf{UDP} \\ \hline
+        \textbf{Type de Protocole} & Orienté connexion sur UDP  & Orienté connexion & Sans connexion \\ \hline
+        \textbf{Fiabilité} & Élevée (via les mécanismes de QUIC) & Élevée & Faible \\ \hline
+        \textbf{Établissement de Connexion} & Handshake 0-RTT rapide & Handshake en trois temps & Aucun \\ \hline
+        \textbf{Multiplexage de Flux} & Oui  & Non & Non \\ \hline
+        \textbf{Contrôle de Flux} & Avancé  & Standard & Aucun \\ \hline
+        \textbf{Contrôle de Congestion } & Oui  & Oui  & Non \\ \hline
+        \textbf{Récupération de Perte} & Numéros de paquets uniques, ACK explicites & Numéros de séquence, ACK & Aucun \\ \hline
+        \textbf{Sécurité} & Chiffrement et authentification intégrés  & TCP+TLS externe & Aucun \\ \hline
+        \textbf{Flexibilité de Déploiement} & Haute, espace utilisateur & Faible, noyau système & Haute, espace utilisateur \\ \hline
+        \textbf{Résilience} & Migration de connexion possible & Non & Non \\ \hline
+    \end{tabular}\\
+    \caption{Tableau comparatif des protocoles QUIC, TCP et UDP }
+    \label{tab:Table_COMPARE_QTU}
+\end{table}
+
+\section{Notion de Multipath et extension au protocole QUIC}
+\subsection{Définition}
+Le concept de \textbf{multipath} consiste à utiliser plusieurs chemins de transmission simultanément pour acheminer des données d'un point A à un point B sur un réseau. Cette technique permet d'améliorer la résilience, la bande passante globale, et la performance en exploitant toutes les interfaces réseau disponibles. Le multipath est particulièrement utile dans les environnements où des appareils disposent de plusieurs connexions réseau, comme les smartphones avec WiFi et LTE.
+
+\subsection{Extension de QUIC pour le multipath: MP-QUIC}
+MP-QUIC (Multipath QUIC) est une extension de QUIC qui permet d'exploiter plusieurs interfaces réseau simultanément. MP-QUIC combine les avantages de QUIC avec les capacités de multipath. Cette extension introduit de nouvelles notions non présentes dans l'implementation du QUIC traditionnel qui nous seront utiles pour concevoir notre solution.\\
+
+MPQUIC présente des avantages conceptuels significatifs. En étant basé sur QUIC, il est plus facile à déployer car ne dépend pas du système d'exploitation et intègre les informations de contrôle des trajets multiples avec un minimum d'interférence, tout en tirant parti des flux d'applications multiples et des priorités HTTP/2 pour optimiser la transmission des paquets dans des environnements variés \cite{8422951}. Il existe cependant d'autres protocoles de transport intégrant les fonctionalités de multipath comme MTCP, SCTP mais qui nécessitent souvent une prise en charge par le systeme d'exploitation ce qui ralentit leur adoption, notament dans les appareils mobiles. 
+
+
+\subsubsection{Avantages de MP-QUIC}
+Bénéficiant déjà des avantages du QUIC traditionnels, le protocole MP-QUIC bénéficie en plus des avantages suivants:
+\begin{itemize}
+    \item \textbf{Utilisation de multiples chemins réseau :} permet l'utilisation simultanée de plusieurs chemins réseau (par exemple, WiFi et LTE sur un smartphone), augmentant la bande passante globale disponible et améliorant la résilience en cas de défaillance d'une connexion.
+    \item \textbf{Amélioration des performances :} Les évaluations montrent qu'il améliore le débit et réduit les temps de téléchargement par rapport à QUIC, TCP et MPTCP \cite{8422951}. 
+    \item  \textbf{Flexibilité et Adaptabilité :} Il peut s'adapter dynamiquement aux conditions changeantes du réseau, basculant entre différentes connexions selon leur disponibilité et leur qualité. Ce qui assure un performance constante même dans des environnements réseau hétérogènes
+    \item \textbf{Compatibilité avec les environnements variés :} MP-QUIC est conçu pour fonctionner efficacement dans divers environnements réseau, y compris les réseaux mobiles, les centres de données, et les réseaux domestiques et d'entreprises.
+\end{itemize}
+
+\section{Les protocoles de transfert de données}
+Les protocoles de transfert de données sont essentiels pour la communication entre applications, permettant la transmission efficace et fiable des données à travers un réseau. Chaque protocole est conçu pour répondre à des besoins spécifiques en termes de sécurité, de fiabilité, d'efficacité et a des caractéristiques spécifiques, influençant son utilisation et ses performances dans différents contextes.
+
+\subsection{HTTP}
+
+Le HTTP est un protocole de communication destiné aux échanges d’informations sur le Web. Il repose sur un modèle client-serveur où un client envoie des requêtes à un serveur, qui répond avec les données demandées. Il a été conçu pour faciliter la communication sur le Web. HTTP permet la récupération de documents hypertextes (pages web) et de fichiers multimédias. Son principal objectif est de fournir un mécanisme flexible pour interagir avec les ressources en ligne.
+
+\paragraph{Principe de Fonctionnement}
+Le HTTP fonctionne sur une connexion TCP et utilise une architecture de requête-réponse. Le client, généralement un navigateur web envoie des requêtes HTTP (par exemple, GET, POST) et le serveur répond avec des ressources, comme des pages HTML ou des fichiers JSON. Chaque transaction HTTP est stateless (sans état), c'est-à-dire que chaque requête est indépendante de la précédente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.7]{chapters/chapter02/fig/http/http.png}
+    \caption{Processus de communication HTTP.\cite{ionos-http-2020}}
+    \label{fig:gen}
+\end{figure}
+
+\subsection{FTP}
+
+FTP\cite{gien1978file} est un protocole standard utilisé pour transférer des fichiers entre un client et un serveur sur un réseau TCP/IP. Il permet à un utilisateur d'uploader ou de télécharger des fichiers. FTP a été conçu pour permettre un transfert fiable de fichiers volumineux entre des systèmes distants, tout en offrant des fonctionnalités basiques d'authentification.
+
+\paragraph{Principe de Fonctionnement}
+FTP utilise deux canaux de communication\cite{techtarget-2016} : un canal de commande (port 21) pour échanger des commandes et un canal de données (port 20 ou dynamique) pour le transfert des fichiers. Il fonctionne en mode actif (où le client accepte une connexion depuis le serveur pour les données) ou passif (où le client initie la connexion de données).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.35]{chapters/chapter02/fig/ftp/FTP_active_passive.jpg}
+    \caption{Fonctionnelent modes actif et passif du protocole FTP.\cite{techtarget-2016}}
+    \label{fig:gen}
+\end{figure}
+
+\subsection{SFTP}
+
+SFTP est une version sécurisée de FTP fonctionnant au-dessus du protocole SSH (Secure Shell). Il assure le transfert de fichiers avec des mécanismes de sécurité avancés. SFTP a été conçu pour combiner les fonctionnalités de FTP avec la sécurité de SSH, garantissant ainsi la confidentialité et l'intégrité des fichiers échangés.
+
+\paragraph{Principe de Fonctionnement}
+SFTP utilise une seule connexion sécurisée sur le port 22, contrairement à FTP qui en utilise deux. Toutes les données, y compris les commandes et les fichiers, sont chiffrées via SSH. Les utilisateurs doivent s’authentifier via SSH pour accéder aux fichiers distants, et toutes les actions de gestion de fichiers sont effectuées de manière sécurisée. L'architecture du protcole repose sur les elements clé suivants: 
+\begin{itemize}
+    \item \textbf{Client SFTP} : Le logiciel utilisé pour établir une connexion SSH sécurisée et gérer les fichiers.
+    \item \textbf{Serveur SFTP} : L'hôte sécurisé qui accepte les connexions SFTP et assure le transfert sécurisé des fichiers.
+    \item \textbf{SSH} : Le protocole sous-jacent qui fournit le chiffrement et l’authentification des connexions.
+\end{itemize}
+
+
+\subsection{GridFTP}
+GridFTP\cite{nadig2018comparative} est une extension du protocole FTP, conçue pour le transfert de fichiers à grande échelle dans des environnements distribués comme les grilles de calcul et les centres de données. Il améliore FTP en y ajoutant des fonctionnalités adaptées aux réseaux à large bande passante et à haute latence\cite{wikipedia-contributors-2023-gridftp, gridFTP}, permettant ainsi une meilleure gestion des transferts massifs de données .
+
+\paragraph{Principe de fonctionnement}
+GridFTP utilise plusieurs connexions parallèles pour optimiser la bande passante disponible lors du transfert de données volumineuses. Il inclut des mécanismes tels que la reprise automatique des transferts après interruption et la gestion des connexions multiples. Il est largement utilisé dans les grilles de calcul scientifique, où le transfert rapide et fiable de données massives est critique\cite{gridFTP}.
+
+\paragraph{Caractéristiques principales} \begin{itemize} \item \textbf{Parallélisme} : Utilisation de multiples connexions pour augmenter le débit de transfert. \item \textbf{Reprise automatique} : Les transferts interrompus peuvent reprendre là où ils ont été arrêtés. \item \textbf{Optimisation pour haute latence} : Conçu pour fonctionner efficacement sur des réseaux à haute latence. \item \textbf{Sécurité} : Supporte les extensions de sécurité comme GSI (Grid Security Infrastructure) pour l'authentification et le chiffrement. \end{itemize}
+
+\paragraph{Cas d'usage typique}
+GridFTP est principalement utilisé dans les environnements de calcul intensif, les centres de données, et les réseaux distribués pour le transfert de fichiers volumineux dans des infrastructures de grilles, où la fiabilité et l'efficacité sont essentielles.
+
+\subsection{BitTorrent}
+BitTorrent est un protocole peer-to-peer (P2P) conçu pour le partage de fichiers de manière distribuée\cite{wikipedia-contributors-2024-bitorrent, wiki-bitorrent}. Contrairement aux approches centralisées, BitTorrent permet à chaque participant (appelé "pair") de télécharger et de partager simultanément des parties d'un fichier, ce qui rend le protocole extrêmement efficace pour la distribution de fichiers volumineux à un grand nombre d'utilisateurs.
+
+\paragraph{Principe de fonctionnement\cite{wikipedia-contributors-2024-bitorrent}}
+Le fichier à partager est divisé en petits morceaux. Chaque pair télécharge les morceaux disponibles auprès des autres pairs et, en parallèle, partage les morceaux qu'il a déjà téléchargés. Cela réduit la dépendance à un seul serveur central et améliore la robustesse et la vitesse des transferts à mesure que le nombre de pairs augmente.
+
+\paragraph{Caractéristiques principales} \begin{itemize} \item \textbf{Décentralisation} : Aucun serveur centralisé n'est requis, la distribution des fichiers est répartie entre les pairs. \item \textbf{Partage simultané} : Les utilisateurs téléchargent et partagent des morceaux de fichier en même temps. \item \textbf{Évolutivité} : Plus il y a de pairs dans le réseau, plus le transfert est rapide. \item \textbf{Tolérance aux pannes} : La perte de quelques pairs n'affecte pas la capacité à télécharger le fichier. \end{itemize}
+
+\paragraph{Cas d'usage typique}
+BitTorrent est couramment utilisé pour la distribution de fichiers volumineux à grande échelle, comme les logiciels open source, les distributions Linux, ou encore des médias volumineux. Il est particulièrement adapté aux environnements où le téléchargement par un grand nombre de personnes est nécessaire sans surcharger un serveur central.
+
+\subsection{FDT}
+FDT (Fast Data Transfer) est un protocole optimisé pour le transfert de fichiers à haut débit sur des réseaux longue distance. Il est principalement utilisé dans les contextes où les volumes de données sont massifs, comme les grandes expériences scientifiques \cite{hp-transfer}. FDT exploite pleinement la bande passante disponible sur les réseaux à longue distance, en utilisant des connexions multiples pour maximiser le débit.
+
+\paragraph{Principe de fonctionnement}
+FDT utilise plusieurs canaux TCP parallèles pour assurer un transfert rapide des fichiers volumineux. Il est capable de segmenter un fichier en flux multiples et de gérer la synchronisation de ces flux sur des réseaux à haute latence. Il optimise également l’utilisation de la bande passante, ce qui permet d’éviter les goulots d’étranglement sur les réseaux longue distance.\cite{nadig2018comparative}
+
+\paragraph{Caractéristiques principales} \begin{itemize} \item \textbf{Parallélisme des flux} : Utilisation de plusieurs flux TCP simultanés pour maximiser l'utilisation de la bande passante. \item \textbf{Optimisation pour longue distance} : Conçu pour des transferts à très haute vitesse sur des réseaux à grande distance géographique. \item \textbf{Reprise automatique} : Capacité à reprendre les transferts interrompus. \item \textbf{Gestion automatique des connexions} : Ajustement dynamique du nombre de connexions pour optimiser le débit. \end{itemize}
+
+\paragraph{Cas d'usage typique}
+FDT est souvent utilisé dans les grandes infrastructures scientifiques et académiques, par exemple pour le transfert de données entre centres de recherche géographiquement éloignés ou pour les expériences dans le domaine de la physique des particules, où des volumes énormes de données doivent être transférés rapidement.
+
+\subsection{MDTMFTP}
+MDTMFTP\cite{zhang2018mdtmftp, nadig2018comparative} est une extension de FTP qui introduit des optimisations pour les transferts de données à travers des réseaux distribués. Il améliore les performances de FTP en exploitant le parallélisme et la gestion de flux multiples, tout en conservant la compatibilité avec les fonctionnalités de base de FTP, comme la gestion de fichiers et les contrôles d'accès.
+
+\paragraph{Principe de fonctionnement}
+MDTMFTP conserve le mécanisme de base de FTP mais optimise les transferts en gérant plusieurs connexions simultanées pour le transfert des fichiers. Il utilise des méthodes de compression et des ajustements dynamiques pour réduire les temps de transfert et gérer plus efficacement la bande passante disponible.
+
+\paragraph{Caractéristiques principales} \begin{itemize} \item \textbf{Parallélisme des connexions} : Utilisation de connexions multiples pour améliorer la vitesse de transfert. \item \textbf{Compression des données} : Réduction de la taille des fichiers pour accélérer les transferts. \item \textbf{Reprise automatique} : Support de la reprise des transferts en cas d’interruption. \item \textbf{Compatibilité FTP} : Conserve toutes les fonctionnalités de base de FTP (gestion des fichiers, authentification). \end{itemize}
+
+\paragraph{Cas d'usage typique}
+MDTMFTP est particulièrement adapté aux environnements où il est nécessaire de transférer des fichiers volumineux de manière fiable et rapide sur des réseaux distribués. Il est couramment utilisé dans les centres de données, les infrastructures cloud, et les réseaux de calcul intensif.
+
+
+
+\subsection{Étude Comparative des protocoles de tranfert de données existant}
+\subsubsection{Multiplexage et flux de données}
+
+Les protocoles \textit{GridFTP}, \textit{FDT}, et \textit{MDTMFTP} prennent en charge le multiplexage des connexions, permettant ainsi des transferts parallèles plus rapides. GridFTP et \textit{MDTMFTP} utilisent des connexions multiples pour optimiser la performance sur les réseaux à large bande passante\cite{gridFTP, nadig2018comparative}. \textit{BitTorrent} permet également le multiplexage, mais il fonctionne dans un cadre de partage entre pairs (P2P), ce qui rend la gestion des flux plus distribuée et dépendante de la disponibilité des pairs.
+
+\subsubsection{Tolérance aux pannes et résilience}
+
+\textit{GridFTP} et \textit{FDT} sont conçus pour assurer une tolérance aux pannes. GridFTP peut reprendre automatiquement un transfert en cas de coupure de connexion\cite{gridFTP}, tout comme FDT, qui est également robuste face aux interruptions. \textit{BitTorrent} se distingue par sa résilience naturelle dans les réseaux P2P, où les pairs peuvent se connecter ou se déconnecter sans interrompre le transfert\cite{wikipedia-contributors-2024-bitorrent}.
+
+\subsubsection{Sécurité}
+
+\textit{HTTP} \textit{GridFTP} et \textit{FDT} offrent des options de chiffrement pour sécuriser les données pendant le transfert. Ces protocoles intègrent également des mécanismes de sécurité par défaut, tels que le \textit{TLS}, tandis que la sécurité pour \textit{MDTMFTP} dépendra de la configuration du serveur et du client.
+
+\subsubsection{Latence et performances}
+
+GridFTP et MDTMFTP sont capables de gérer d'importants volumes de données, mais la latence peut varier selon la qualité du réseau. FDT est conçu pour optimiser les transferts à faible latence sur des réseaux distribués\cite{hp-transfer}, utilisant plusieurs flux TCP pour maximiser la bande passante disponible sur de longues distances.
+
+\subsubsection{Gestion de l'énergie et impact environnemental}
+
+Aucun des protocoles mentionnés n'intègre spécifiquement des critères d'énergie verte dans leurs mécanismes de transfert.
+
+\subsubsection{Usage typique}
+
+\textit{GridFTP} et \textit{MDTMFTP} sont principalement utilisés pour les transferts massifs de données dans des environnements de calcul haute performance ou distribués, tandis que \textit{FDT} est souvent employé pour des transferts à haute vitesse sur de longues distances, particulièrement dans des contextes scientifiques nécessitant un transfert rapide de grands volumes de données. En somme,  GridFTP et FDT sont optimisés pour des transferts performants, tandis que MDTMFTP se concentre sur l'efficacité dans les environnements hautement connectés sans intégrer d'aspects environnementaux dans leur conception.
+
+\begin{table}[h!]
+    \centering
+     \caption{Comparaison des protocoles de transfert de données existant à QuicPlex}
+    \begin{tabular}{|p{3cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{1.5cm}|}
+        \hline
+        \textbf{Caractéristiques} & \textbf{GridFTP} & \textbf{BitTorrent} & \textbf{FDT} & \textbf{MDTMFTP} & \textbf{HTTP/2} & \textbf{FTP} \\
+        \hline
+        \textbf{Type de protocole} & FTP optimisé pour les grilles & P2P (Pair-à-Pair) & Optimisé pour transfert à haut débit & FTP amélioré pour réseaux larges & Protocole d'application (HTTP) & Protocole d'application \\
+        \hline
+        \textbf{Multiplexage} & Oui, via connexions multiples & Oui, via les pairs & Oui, plusieurs flux TCP & Oui, plusieurs flux FTP & Oui, via une seule connexion TCP & Non \\
+        \hline
+        \textbf{Transfert P2P} & Non & Oui & Non & Non & Non & Non \\
+        \hline
+        \textbf{Bande passante} & Optimisée avec plusieurs connexions & Partagée entre pairs & Maximisée via flux multiples & Maximisée via flux multiples & Optimisée par la gestion des flux & Fixe, sans optimisation \\
+        \hline
+        \textbf{Tolérance aux pannes} & Oui, reprise automatique & Oui, via les pairs & Oui, reprise automatique & Oui, reprise automatique & Non & Non \\
+        \hline
+        \textbf{Sélection des relais} & Non applicable & Dynamique (pairs aléatoires) & Non applicable & Non applicable & Non applicable & Non applicable \\
+        \hline
+        \textbf{Gestion de l'énergie verte} & Non & Non & Non & Non & Non & Non \\
+        \hline
+        \textbf{Priori-sation des flux} & Non & Non & Oui & Non & Oui & Non \\
+        \hline
+        \textbf{Sécurité} & Sécurité optionnelle & Variable (dépend des clients) & Sécurité optionnelle & Sécurité optionnelle & Chiffrement (TLS) & Sécurité de base (authentification) \\
+        \hline
+        \textbf{Latence} & Moyenne, selon les conditions & Variable (dépend du réseau) & Faible (optimisé pour réseaux à longue distance) & Faible (optimisé pour grandes distances) & Faible (optimisé pour le web) & Haute \\
+        \hline
+        \textbf{Usage typique} & Transfert massif dans les grilles & Partage de fichiers volumineux & Transferts massifs scientifiques & Transfert de fichiers distribués & Communication client-serveur (web) & Transfert de fichiers simple \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+
+\section{Bilan du chapitre et Positionnement}
+
+\subsection{Bilan}
+Dans ce premier chapitre nous avons fait une analyse des protocoles de transport et de transfert de données, avec un focus particulier sur le protocole QUIC. Nous avons d'abord présenté les concepts fondamentaux de QUIC, notamment ses mécanismes de contrôle de flux, de congestion et de récupération des pertes pour montrer comment il résoud les problèmes des blocages de tête de ligne inhérents a TCP et de non fiabilité lié a UDP. En suite, nous avons fait une comparaison entre QUIC, TCP et UDP, mettant en lumière les avantages de QUIC en termes de performance, de sécurité et de flexibilité au niveau de la couche transport. Nous avons également introduit le concept de multi-chemins, soulignant les bénéfices potentiels de cette approche. Enfin, nous avons entrepris une analyse comparative de plusieurs protocoles de transfert de données notament \textbf{HTTP, FTP, SFTP, Bitorrent, FDT} et \textbf{mdtmFTP}, offrant un appercu des solutions existantes dans le domaine. Cette étude nous a permis de remarquer un faible support pour les considérations énergétiues dans ces protocoles existant ourvant ainsi les porte a des recherches supplémentaires dans le domaine. Passer par ces étapes du chapitre nous a permis de mieux comprendre l'évolution des protocoles de transport et de transfert, ainsi que les défis actuels et les solutions émergentes dans ce domaine. 
+
+\subsection{Positionnement}
+
+Dans notre travail, nous avons présenté differents protocoles de transport et de transfert de données. Malgré les grandes performances de ces protocoles, il en résulte quelques lacunes majeures: l'absence de support énergétique dans les spécifications des protocoles de transport, la non-utilisation de QUIC comme protocole de transport sous-jacent\cite{gridFTP, zhang2018mdtmftp, gien1978file}. Notre approche vise à combler ces manques en développant un nouveau protocole de transfert de données qui exploite les avantages de QUIC tout en intégrant des mécanismes de décentralisation et d'efficacité énergétique avec pour but de répondre aux besoins croissants de transferts de grands volumes de données tout en maximisant l'usage de la bande passante et en minimisant la consommation d'énergie, un aspect crucial mais non pris en compte dans la plupart des protocoles actuels.
