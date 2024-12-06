@@ -63,6 +63,7 @@ export async function addDocumentToProject(projectId: number, name: string, file
     id: Date.now(),
     name,
     createdAt: new Date().toISOString(),
+    signatures: [],
     versions: [
       {
         versionName,

@@ -69,7 +69,7 @@ const DocumentView: React.FC<ProjectDetailsProps> = ({ params }) => {
     
         const pages = pdfDoc.getPages();
         const lastPage = pages[pages.length - 1];
-        const { width, height } = lastPage.getSize();
+        const { width } = lastPage.getSize();
     
         // Calculate position for bottom right corner
         const signatureWidth = 100;
@@ -143,6 +143,7 @@ const DocumentView: React.FC<ProjectDetailsProps> = ({ params }) => {
     return (
         <div className="px-10 bg-gray-100 max-h-screen relative">
             {/* Visualisation du PDF */}
+            <div className='hidden'>{signature}</div>
             <div className="">
                 <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js`}>
                     <div className="border rounded-lg shadow-lg overflow-hidden" style={{ height: '600px' }}>
