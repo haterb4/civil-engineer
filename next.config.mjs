@@ -1,10 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    webpack: (config) => {
-        config.externals.push('canvas');
-        return config;
-      },
-      transpilePackages: ['pdfjs-dist', 'pdf-lib']
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        canvas: false
+      };
+    }
+    return config;
+  },
+  transpilePackages: ['pdfjs-dist', 'pdf-lib']
 };
 
 export default nextConfig;
